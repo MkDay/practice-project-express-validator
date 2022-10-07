@@ -1,0 +1,115 @@
+* install express, ejs, express-validator, body-parser
+* in app.js file, require all of them.
+* this is how to import express validator
+    const { check, validationResult } = require('express-validator')
+* we have two pages which are Home page and Register page.
+* so we have two .ejs files called 'index.ejs' & 'register.ejs'.
+* afetr requiring everything, create express app.
+    const app = express()
+* set up ejs view engine.
+    app.set('view engine', 'ejs');
+* listen to requests at port 3000
+    app.listen(3000)
+* we have two 'get' requests, one for Home page and the other for Register page.
+    app.get('/', (req, res) => {
+        res.render('index');
+    })
+
+    app.get('/register', (req, res) => {
+        res.render('register');
+    })
+* we use bootstrap css. so add cdn link of bootstrap.
+* in register.ejs file we have form element with the fields username, email, password & comfirm password.
+* form action="/register" method="POST"
+* now move on to the app.js file and create 'post' request for the register page.
+    app.post('/register', (req, res) => {
+
+    });
+* as a middleware we use body-parser urlencoded method. so right above the post request create that method.
+
+    const urlencodedParser = bodyParser.urlencoded({ extended: false });
+
+     app.post('/register', urlencodedParser, (req, res) => {
+
+    });
+
+* now we have to create checks for form fields.
+
+     const urlencodedParser = bodyParser.urlencoded({ extended: false });
+
+     app.post('/register', [
+        check('username', 'username must not be empty and atleast 3 charactors long')
+            .exists()
+            .isLength({ min: 3 }),
+        check('email', 'email is not valid')
+            .isEmail()
+            .normalizeEmail()
+     ] 
+     urlencodedParser, 
+     (req, res) => {
+
+    });
+
+* we check for username exists and its length is long atleast 3 charactors. and some checks for email.
+* now in the callback function, create the variable called 'errors' and assign validationResult() into it .
+
+     app.post('/register', [
+        check('username', 'username must not be empty and atleast 3 charactors long')
+            .exists()
+            .isLength({ min: 3 }),
+        check('email', 'email is not valid')
+            .isEmail()
+            .normalizeEmail()
+     ] 
+     urlencodedParser, 
+     (req, res) => {
+            const errors = validationResult(req);
+    });
+
+* now check if errors are existed or not.
+* if errors are existed we create a variable called 'alert' and assign 'errors.array()' to it.
+* now render the page 'register' with the variable 'alert'.
+
+    app.post('/register', [
+        check('username', 'username must not be empty and atleast 3 charactors long')
+            .exists()
+            .isLength({ min: 3 }),
+        check('email', 'email is not valid')
+            .isEmail()
+            .normalizeEmail()
+     ] 
+     urlencodedParser, 
+     (req, res) => {
+            const errors = validationResult(req);
+
+            if(!errors.isEmpty()) {
+                const alert = errors.array();
+
+                res.render('register', { alert });
+            }
+    });
+
+* now we want to display the error messages in the view.
+* in order to do that we need alert box.
+* so we can grab an alert box from bootstrap.
+* go to bootstrap and Doc -> components -> alert and choose one and copy it.
+* paste it right above the 'form' element in the register.ejs
+* in this case we have two error messages to generate.
+* so we have to loop through those error messages in order to diplay them in the view.
+* go to 'register.ejs' file and wrap out the alert box using the following code snippet.
+
+        <% if(typeof alert != "undefined") { %>
+            <% alert.forEach((error) => {
+               <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <%= error.msg %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+               
+           <% }); %>
+        <% } %>
+
+* now we have a form that generate error message when the user doesn't enter the expected data.
+* but I have noticed after showing error messages and even we enter right inputs the error messages are still there.
+* secondly if we enter correct inputs the browser keeps loading and nothing happend.
+* to avoid that we have to submit inputs somewhere and wind up the submitting process.
+
